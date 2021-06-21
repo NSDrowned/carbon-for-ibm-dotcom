@@ -21,7 +21,8 @@ export { GRID_MODE };
 const { prefix } = settings;
 const { stablePrefix: ddsPrefix } = ddsSettings;
 
-const gridBreakpoint = parseFloat(breakpoints.lg.width) * baseFontSize;
+const gridLgBreakpoint = parseFloat(breakpoints.lg.width) * baseFontSize;
+const gridMdBreakpoint = parseFloat(breakpoints.md.width) * baseFontSize;
 
 // tag constants used for same height calculations
 const headingBottomMargin = 64;
@@ -121,7 +122,7 @@ class DDSCardGroup extends LitElement {
   private _setSameHeight = entries => {
     window.requestAnimationFrame(() => {
       const documentWidth = entries[0].contentRect.width;
-      const columns = documentWidth < gridBreakpoint ? 2 : 3;
+      const columns = documentWidth < gridLgBreakpoint ? 2 : 3;
 
       if (this.gridMode === GRID_MODE.BORDER) {
         this._fillLastRowWithEmptyCards();
@@ -195,8 +196,19 @@ class DDSCardGroup extends LitElement {
     // get card count and calculate needed to fill last row
     const childItems = this.childElementCount;
     const documentWidth = this.ownerDocument!.documentElement.clientWidth;
-    const columns = documentWidth < gridBreakpoint ? 2 : 3;
-    const emptyNeeded = childItems % columns > 0 ? columns - (childItems % columns) : 0;
+    let columns;
+    switch (true) {
+      case documentWidth < gridMdBreakpoint:
+        columns = 1;
+        break;
+      case documentWidth < gridLgBreakpoint:
+        columns = 2;
+        break;
+      default:
+        columns = 3;
+    }
+    const emptyNeeded = childItems % columns > 0 && columns > 1 ? columns - (childItems % columns) : 0;
+
     // add empty cards
     for (let i = 0; i < emptyNeeded; i++) {
       const card = document.createElement('dds-card-group-item');
