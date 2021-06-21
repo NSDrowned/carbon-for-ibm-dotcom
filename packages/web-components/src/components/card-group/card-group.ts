@@ -92,6 +92,10 @@ class DDSCardGroup extends LitElement {
           : false
       );
 
+    if (this.gridMode === GRID_MODE.BORDER) {
+      this._fillLastRowWithEmptyCards();
+    }
+
     // retrieve item heading, eyebrows, and footers to set same height
     if (childItems) {
       childItems.forEach(e => {
@@ -118,6 +122,10 @@ class DDSCardGroup extends LitElement {
     window.requestAnimationFrame(() => {
       const documentWidth = entries[0].contentRect.width;
       const columns = documentWidth < gridBreakpoint ? 2 : 3;
+
+      if (this.gridMode === GRID_MODE.BORDER) {
+        this._fillLastRowWithEmptyCards();
+      }
 
       // split arrays into chunks to handle height setting in each row separately
       const splitItemEyebrows = this._splitArrayPerRows(this._childItemEyebrows, columns);
@@ -151,7 +159,6 @@ class DDSCardGroup extends LitElement {
           'md'
         );
       });
-
       splitItemTagGroup.forEach(row => {
         let maxTagGroupRowHeight = 0;
 
@@ -166,7 +173,6 @@ class DDSCardGroup extends LitElement {
         });
         tagGroupHeightPerRow.push(maxTagGroupRowHeight);
       });
-
       splitItemHeadings.forEach((row, index) => {
         const combinedMarginBottom = headingBottomMargin + tagBottomMargin;
 
@@ -181,6 +187,22 @@ class DDSCardGroup extends LitElement {
         });
       });
     });
+  };
+
+  private _fillLastRowWithEmptyCards = () => {
+    // remove all empty cards
+    this.shadowRoot?.querySelectorAll('[empty]').forEach(e => e.remove());
+    // get card count and calculate needed to fill last row
+    const childItems = this.childElementCount;
+    const documentWidth = this.ownerDocument!.documentElement.clientWidth;
+    const columns = documentWidth < gridBreakpoint ? 2 : 3;
+    const emptyNeeded = childItems % columns > 0 ? columns - (childItems % columns) : 0;
+    // add empty cards
+    for (let i = 0; i < emptyNeeded; i++) {
+      const card = document.createElement('dds-card-group-item');
+      card.setAttribute('empty', '');
+      this.shadowRoot?.appendChild(card);
+    }
   };
 
   /**
